@@ -2,6 +2,10 @@
 
 Under development
 
+## Reference
+
+- [mbedded.ninja linux serial ports](https://blog.mbedded.ninja/programming/operating-systems/linux/linux-serial-ports-using-c-cpp/)
+
 # MIT License
 
 **Copyright (c) 2019 Kevin J. Walchko**

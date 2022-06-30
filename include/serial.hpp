@@ -23,13 +23,24 @@ SOFTWARE.
 ******************************************************************************/
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <vector>
-#include <array> // buffer
-#include <mv/common.hpp> // structures
-// 
+// #include <array> // buffer
+#include <exception>
+// #include <mv/common.hpp> // structures
+//
 // constexpr bool DD_WRITE = false;  // false
 // constexpr bool DD_READ = !DD_WRITE;
+
+class SerialError : public std::exception {
+public:
+    SerialError(const std::string& s): msg(s) {}
+    SerialError(): msg("Serial Error") {}
+    const char* what () const throw () {return msg.c_str();}
+protected:
+    std::string msg;
+};
 
 // macos is broken!!!
 #ifndef B1000000
@@ -44,9 +55,10 @@ typedef struct {
 
 class Serial {
     int fd;
-    int dir_pin;
-    std::array<std::uint8_t, 512> buffer;
-    void set_dir(bool enabled);
+    uint8_t buffer[512];
+    // int dir_pin;
+    // std::array<std::uint8_t, 512> buffer;
+    // void set_dir(bool enabled);
 
 public:
     Serial();
@@ -54,12 +66,12 @@ public:
 
     bool open(const std::string& port, int speed=B1000000);
     void close();
-    int write(const packet& pkt);
+    int available();
+    int write(const void* buffer, int size);
     int read();
-    packet buffer2packet(int num, int offset=0);
-    status_t decode();
+    int read(void* buf, int size);
+    // status_t decode();
     void flush_input();
     void flush_output();
     void flush();
-    int available();
 };

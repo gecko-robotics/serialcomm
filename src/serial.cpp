@@ -1,35 +1,29 @@
-// #include <mv/SerialPort.hpp>
-#include <sys/ioctl.h>  // dtr or rts
-#include <fcntl.h>      // open
-#include <termios.h>    // serial
-#include <string.h>     // memset
+#include "serial.hpp"
+#include <sys/ioctl.h> // ioctl, dtr or rts
+#include <fcntl.h>     // open
+#include <termios.h>   // serial
+#include <string.h>    // memset
+#include <unistd.h>    // write(), read(), close()
+#include <errno.h>     // errno
 #include <iostream>
 // #include <sys/file.h> // flock
-// #include <termcolor/termcolor.hpp>
-
-
-constexpr bool DD_WRITE = false;  // false
-constexpr bool DD_READ = !DD_WRITE;
 
 using namespace std;
 
-/*
-   Instr Pkt                      Status Pkt
---////////////-------------------///////////------
-              Return Delay Time
 
-Return Delay Time: set by Reg 5 (AX-12), default to 250 (0.5msec)
-Packet Times: time = 8*num_bytes/DataRate
+string getError(){
+    extern int errno;
+    return string(strerror( int(errno) ));
+}
 
-shortest status packet = 6 bytes
-Packet Times (msec)
-57600    0.833
-115200   0.417
-1000000  0.048
-*/
-
-Serial::Serial(): fd(0), dir_pin(TIOCM_DTR) {}
+Serial::Serial(): fd(0) /*, dir_pin(TIOCM_DTR)*/ {}
 Serial::~Serial(){close();}
+
+int Serial::available(){
+    int bytes;
+    ioctl(fd, FIONREAD, &bytes);
+    return bytes;
+}
 
 // Opens the serial port
 // @port: string containing the file path
@@ -41,10 +35,7 @@ bool Serial::open(const std::string& port, int speed){
     // O_NOCTTY means that no terminal will control the process opening the serial port.
     // fd = ::open(port.c_str(), O_RDWR|O_NOCTTY|O_NONBLOCK);
     fd = ::open(port.c_str(), O_RDWR|O_NOCTTY);
-    if(fd < 0){
-        perror("Error opening serial port");
-        return false;
-    }
+    if (fd < 0) throw SerialError("open(): " + getError());
 
     memset(&t, 0, sizeof(t)); // clear struct for new port settings
 
@@ -112,11 +103,6 @@ bool Serial::open(const std::string& port, int speed){
 
     // flush();
 
-    set_dir(DD_READ);
-    msleep(100);
-    set_dir(DD_WRITE);
-    // set_dir(DD_READ); // ?
-
     // if(flock(fd, LOCK_EX | LOCK_NB) == -1) {
     //     throw std::runtime_error("Serial port with file descriptor " +
     //         std::to_string(fd) + " is already locked by another process.");
@@ -132,23 +118,11 @@ void Serial::close(){
 
 // Writes packets to the output buffer for transmit
 // @return: bytes written
-int Serial::write(const packet& pkt){
-    set_dir(DD_WRITE);
-    // int num = 0;
-    // if ((num = available()) > 0) printf("** Data in input: %d\n", num);
-    flush_input();
-    int ret = ::write(fd, pkt.data(), pkt.size());
-    // for (const auto& p: pkt) ::write(fd, (void*)&p, 1);
-    // int ret = pkt.size();
-    // flush_output();
-
-    // KEEP this delay ... not sure what the minimum should be
-    int min_time = 100;
-    int delay = int(1e6*double(pkt.size())/1e6);
-    delay = delay > min_time ? delay : min_time;
-    // printf(">> delay: %d\n", delay);
-    usleep(delay);
-    set_dir(DD_READ);
+int Serial::write(const void* buf, int size){
+    int ret;
+    if ((ret = ::write(fd, buf, size)) < 0){
+        throw SerialError("write(): " + getError());
+    }
     return ret;
 }
 
@@ -156,105 +130,47 @@ int Serial::write(const packet& pkt){
 // @returns: number of bytes read
 int Serial::read(){
     int num = 0;
-    // set_dir(DD_READ);
-    // smallest packet is 6 bytes
-    // int num = available();
-    // printf(">> available: %d\n", num);
-    // if (num < 6) return 0;
+    int size = sizeof(buffer);
+    memset(buffer, 0, size);
+    num = 0;
+    if ((num = ::read(fd, (void*)buffer, size)) < 0){
+        throw SerialError("read(): " + getError());
+    }
+    return num;
+}
 
-    // num = (num > 0) ? num : 10;
-    //
-    // buffer.fill(0);
-    // size_t remain = num;
-    // while(remain > 0){
-    //     remain -= ::read(fd, buffer.data() + remain, remain);
-    // }
+// Reads the input serial buffer
+// @returns: number of bytes read
+int Serial::read(void* buf, int size){
+    int num = 0;
 
     // num = ::read(fd, buffer.data(), buffer.size());
     uint8_t b[128];
     uint8_t *p = b;
     num = 0;
     // num = ::read(fd, b, 10);
-    for (int i=0; i <10; ++i) {
-        num += ::read(fd, p, 1);
-        if (*p < 0) printf("oops %d", *p);
-        p++;
+    // for (int i=0; i <10; ++i) {
+    //     num += ::read(fd, p, 1);
+    //     if (*p < 0) printf("oops %d", *p);
+    //     p++;
+    // }
+    if ((num = ::read(fd, buf, size)) < 0){
+        throw SerialError("read(): " + getError());
     }
-    // num = ::read(fd, buffer.data(), num);
-
-    // set_dir(DD_WRITE);
-    // TODO: check error code and return it if error
     return num;
-}
-
-/*
-do something like python:
-status: {'id': 1, 'error str': 'None', 'error num': 0, 'params': [253, 1], 'raw': [255, 255, 1, 4, 0, 253, 1, 252]}
-*/
-packet Serial::buffer2packet(int num, int offset){
-    for (int i=0; i < 10; ++i) cout << int(buffer[i]) << ",";
-    cout << endl;
-    auto pkt = packet(num);
-    std::copy(buffer.begin(), buffer.begin() + offset, pkt.begin());
-    return pkt;
-}
-
-status_t Serial::decode(){
-    status_t ret;
-    // resp: [s,s,id,len,err, ... ,chksum]
-    for (int i = 0; i < buffer.size() - 2; ++i) {
-        if (buffer[i] == 0xff && buffer[i+1] == 0xff) {
-            ret.id = buffer[i+2];
-            ret.error = buffer[i+4];
-            for (int j=0; j < buffer[i+3]-2; ++j) ret.params.push_back(buffer[i+5+j]);
-            break;
-        }
-    }
-
-    return ret;
 }
 
 // Flush input buffer
 void Serial::flush_input(){
-    tcflush(fd, TCIFLUSH);
+    if (tcflush(fd, TCIFLUSH) < 0) throw SerialError("flush(): " + getError());
 }
 
 // Flush output buffer
 void Serial::flush_output(){
-    tcflush(fd, TCOFLUSH);
+    if (tcflush(fd, TCOFLUSH) < 0) throw SerialError("flush(): " + getError());
 }
 
 // Flush both input and output buffers
 void Serial::flush(){
-    tcflush(fd, TCIOFLUSH);
-}
-
-// See how many bytes are available in the input buffer to read
-int Serial::available(){
-    int bytes_available;
-    ioctl(fd, FIONREAD, &bytes_available);
-    return bytes_available;
-}
-
-// Toggles both the RTS and DTR pins to signal TX or RX
-// TODO: change to RTS or DTR, not both, but configurable
-void Serial::set_dir(bool enabled){
-    // int pin = 0;
-    dir_pin = TIOCM_DTR;
-    int value = enabled ? TIOCMBIS : TIOCMBIC;
-    ioctl(fd, value, &dir_pin);
-
-    // int pin = 0;
-    // if (enabled){
-    //     // pin = TIOCM_RTS;
-    //     // ioctl(fd, TIOCMBIS, &pin);
-    //     pin = TIOCM_DTR;
-    //     ioctl(fd, TIOCMBIS, &pin);
-    // }
-    // else {
-    //     // pin = TIOCM_RTS;
-    //     // ioctl(fd, TIOCMBIC, &pin);
-    //     pin = TIOCM_DTR;
-    //     ioctl(fd, TIOCMBIC, &pin);
-    // }
+    if (tcflush(fd, TCIOFLUSH) < 0) throw SerialError("flush(): " + getError());
 }
