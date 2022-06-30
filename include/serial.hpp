@@ -26,12 +26,7 @@ SOFTWARE.
 #include <cstdint>
 #include <string>
 #include <vector>
-// #include <array> // buffer
 #include <exception>
-// #include <mv/common.hpp> // structures
-//
-// constexpr bool DD_WRITE = false;  // false
-// constexpr bool DD_READ = !DD_WRITE;
 
 class SerialError : public std::exception {
 public:
@@ -54,12 +49,6 @@ typedef struct {
 } status_t;
 
 class Serial {
-    int fd;
-    uint8_t buffer[512];
-    // int dir_pin;
-    // std::array<std::uint8_t, 512> buffer;
-    // void set_dir(bool enabled);
-
 public:
     Serial();
     ~Serial();
@@ -70,8 +59,11 @@ public:
     int write(const void* buffer, int size);
     int read();
     int read(void* buf, int size);
-    // status_t decode();
     void flush_input();
     void flush_output();
     void flush();
+
+protected:
+    int fd;
+    uint8_t buffer[512];
 };

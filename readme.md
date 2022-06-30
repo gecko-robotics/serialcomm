@@ -1,6 +1,30 @@
+![](pics/header.jpg)
+
 # Serial Communications
 
 Under development
+
+## Example
+
+```c++
+#include <serial.hpp>
+#include <string>
+
+int main(){
+    Serial ser;
+    ser.open("/dev/serial", B9600);
+
+    try {
+        std::string msg("hello");
+        ser.write(msg.c_str(), msg.size());
+    }
+    catch (const SerialError& e) {
+        std::cout << e << std::endl;
+    }
+
+    return 0
+}
+```
 
 ## Reference
 
