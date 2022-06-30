@@ -1,5 +1,7 @@
 ![](pics/header.jpg)
 
+![GitHub](https://img.shields.io/github/license/gecko-robotics/serialcomm)
+
 # Serial Communications
 
 Under development
