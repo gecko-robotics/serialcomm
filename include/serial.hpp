@@ -62,6 +62,8 @@ public:
     void flush_input();
     void flush_output();
     void flush();
+    void set_dtr(bool enabled);
+    void set_rts(bool enabled);
 
 protected:
     int fd;

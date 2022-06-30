@@ -174,3 +174,19 @@ void Serial::flush_output(){
 void Serial::flush(){
     if (tcflush(fd, TCIOFLUSH) < 0) throw SerialError("flush(): " + getError());
 }
+
+void Serial::set_dtr(bool enabled){
+    int pin = TIOCM_DTR;
+    int value = enabled ? TIOCMBIS : TIOCMBIC;
+    if (ioctl(fd, value, &pin) < 0) {
+        throw SerialError("set_dtr(): " + getError());
+    }
+}
+
+void Serial::set_rts(bool enabled){
+    int pin = TIOCM_RTS;
+    int value = enabled ? TIOCMBIS : TIOCMBIC;
+    if (ioctl(fd, value, &pin) < 0) {
+        throw SerialError("set_rts(): " + getError());
+    }
+}
