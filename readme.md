@@ -26,6 +26,12 @@ int main(){
 }
 ```
 
+## Todo
+
+- [ ] namespace ... gecko?
+- [ ] toggle DTR pin
+- [ ] change version number to date? ex: 2022.6.25 ... version numbers mean nothing but this gives you an idea of what has been done when
+
 ## Reference
 
 - [mbedded.ninja linux serial ports](https://blog.mbedded.ninja/programming/operating-systems/linux/linux-serial-ports-using-c-cpp/)
