@@ -22,7 +22,7 @@ message(STATUS "-------------------------------------")
 
 
 # Build library ----------------------------------------------
-add_library(${PROJECT_NAME} src/serial.cpp)
+add_library(${PROJECT_NAME} SHARED src/serial.cpp)
 target_include_directories(${PROJECT_NAME} 
     PUBLIC 
         $<INSTALL_INTERFACE:include>
