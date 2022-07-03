@@ -9,7 +9,7 @@ Under development
 ## Example
 
 ```c++
-#include <serial.hpp>
+#include <serialcomm/serial.hpp>
 #include <string>
 
 int main(){
@@ -21,7 +21,7 @@ int main(){
         ser.write(msg.c_str(), msg.size());
     }
     catch (const SerialError& e) {
-        std::cout << e << std::endl;
+        std::cout << e.what() << std::endl;
     }
 
     return 0

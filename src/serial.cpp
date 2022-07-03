@@ -1,4 +1,9 @@
-#include "serial.hpp"
+/**************************************************\
+* The MIT License (MIT)
+* Copyright (c) 2019 Kevin Walchko
+* see LICENSE for full details
+\**************************************************/
+#include "serialcomm/serial.hpp"
 #include <sys/ioctl.h> // ioctl, dtr or rts
 #include <fcntl.h>     // open
 #include <termios.h>   // serial
@@ -16,12 +21,20 @@ string getError(){
     return string(strerror( int(errno) ));
 }
 
-Serial::Serial(): fd(0) /*, dir_pin(TIOCM_DTR)*/ {}
-Serial::~Serial(){close();}
+int guard(int err, std::string msg){
+    if (err < 0) { throw SerialError(msg + getError()); }
+    return err;
+}
 
+Serial::Serial(): fd(0) {}
+Serial::~Serial(){ this->close(); }
+
+/**
+ * Get number of bytes waiting to be read.
+ */
 int Serial::available(){
     int bytes;
-    ioctl(fd, FIONREAD, &bytes);
+    guard(ioctl(fd, FIONREAD, &bytes), "available(): ");
     return bytes;
 }
 
@@ -29,14 +42,17 @@ int Serial::available(){
 // @port: string containing the file path
 // @return: boolean for was the port opened? True success, false failed
 bool Serial::open(const std::string& port, int speed){
-    struct termios t;
+    // struct termios t;
 
     // O_RDWR means that the port is opened for both reading and writing.
     // O_NOCTTY means that no terminal will control the process opening the serial port.
     // fd = ::open(port.c_str(), O_RDWR|O_NOCTTY|O_NONBLOCK);
-    fd = ::open(port.c_str(), O_RDWR|O_NOCTTY);
-    if (fd < 0) throw SerialError("open(): " + getError());
+    // guard(fd = ::open(port.c_str(), O_RDWR|O_NOCTTY), "open(): ");
+    guard(fd = ::open(port.c_str(), O_RDWR|O_NOCTTY|O_NONBLOCK), "open(): ");
 
+    this->flush();
+
+    struct termios t;
     memset(&t, 0, sizeof(t)); // clear struct for new port settings
 
     // struct termios
@@ -46,7 +62,6 @@ bool Serial::open(const std::string& port, int speed){
     // tcflag_t c_cflag; /* control mode flags */
     // tcflag_t c_lflag; /* local mode flags   */
     // };
-    // Dynamixel SDK method
     // *** Note: memset clears a lot of flags, all we need to do is
     //           set the ones we care about.
     // CS8 - (1), 8bits set
@@ -95,8 +110,10 @@ bool Serial::open(const std::string& port, int speed){
     // t.c_iflag &= ~(IXON | IXOFF | IXANY);
 
     // clean the buffer and activate the settings for the port
-    if (tcflush(fd, TCIFLUSH) < 0) perror("*** Couldn't flush input buffer");
-    if (tcsetattr(fd, TCSANOW, &t) < 0) perror("*** Couldn't set port attribute");
+    // if (tcflush(fd, TCIFLUSH) < 0) perror("*** Couldn't flush input buffer");
+    // if (tcsetattr(fd, TCSANOW, &t) < 0) perror("*** Couldn't set port attribute");
+    guard(tcflush(fd, TCIFLUSH), "open(): ");
+    guard(tcsetattr(fd, TCSANOW, &t), "open(): ");
 
     // if (tcgetattr(fd, &t) < 0) perror("Couldn't get port attribute");
     // printf(">> %u %u \n", cfgetispeed(&t), cfgetospeed(&t));
@@ -119,74 +136,59 @@ void Serial::close(){
 // Writes packets to the output buffer for transmit
 // @return: bytes written
 int Serial::write(const void* buf, int size){
-    int ret;
-    if ((ret = ::write(fd, buf, size)) < 0){
-        throw SerialError("write(): " + getError());
+    int ret = guard(::write(fd, buf, size), "write(): ");
+    return ret;
+}
+
+// Reads the input serial buffer
+// @returns: number of bytes read
+std::string Serial::read(){
+    string ret;
+    char c;
+    while (true) {
+        int num = guard(::read(fd, (void*)&c, 1), "read(): ");
+        if (num == 1) ret.push_back(c);
+        else break;
     }
     return ret;
 }
 
 // Reads the input serial buffer
 // @returns: number of bytes read
-int Serial::read(){
+int Serial::read(uint8_t* buf, int size){
     int num = 0;
-    int size = sizeof(buffer);
-    memset(buffer, 0, size);
-    num = 0;
-    if ((num = ::read(fd, (void*)buffer, size)) < 0){
-        throw SerialError("read(): " + getError());
-    }
-    return num;
-}
+    memset(buf, 0, size);
 
-// Reads the input serial buffer
-// @returns: number of bytes read
-int Serial::read(void* buf, int size){
-    int num = 0;
-
-    // num = ::read(fd, buffer.data(), buffer.size());
-    uint8_t b[128];
-    uint8_t *p = b;
-    num = 0;
-    // num = ::read(fd, b, 10);
-    // for (int i=0; i <10; ++i) {
-    //     num += ::read(fd, p, 1);
-    //     if (*p < 0) printf("oops %d", *p);
-    //     p++;
-    // }
-    if ((num = ::read(fd, buf, size)) < 0){
-        throw SerialError("read(): " + getError());
+    while (num < size) {
+        num += guard(::read(fd, (void*)&buf[num], size-num), "read(): ");
     }
+
     return num;
 }
 
 // Flush input buffer
 void Serial::flush_input(){
-    if (tcflush(fd, TCIFLUSH) < 0) throw SerialError("flush(): " + getError());
+    guard(tcflush(fd, TCIFLUSH), "flush_input(): ");
 }
 
 // Flush output buffer
 void Serial::flush_output(){
-    if (tcflush(fd, TCOFLUSH) < 0) throw SerialError("flush(): " + getError());
+    guard(tcflush(fd, TCOFLUSH), "flush_output(): ");
 }
 
 // Flush both input and output buffers
 void Serial::flush(){
-    if (tcflush(fd, TCIOFLUSH) < 0) throw SerialError("flush(): " + getError());
+    guard(tcflush(fd, TCIOFLUSH), "flush(): ");
 }
 
 void Serial::set_dtr(bool enabled){
     int pin = TIOCM_DTR;
     int value = enabled ? TIOCMBIS : TIOCMBIC;
-    if (ioctl(fd, value, &pin) < 0) {
-        throw SerialError("set_dtr(): " + getError());
-    }
+    guard(ioctl(fd, value, &pin), "set_dtr(): ");
 }
 
 void Serial::set_rts(bool enabled){
     int pin = TIOCM_RTS;
     int value = enabled ? TIOCMBIS : TIOCMBIC;
-    if (ioctl(fd, value, &pin) < 0) {
-        throw SerialError("set_rts(): " + getError());
-    }
+    guard(ioctl(fd, value, &pin), "set_rts(): ");
 }

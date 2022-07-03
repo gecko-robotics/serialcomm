@@ -22,5 +22,17 @@ message(STATUS "-------------------------------------")
 
 
 # Build library ----------------------------------------------
-add_library(${PROJECT_NAME} src/serial.cpp)
-target_include_directories(${PROJECT_NAME} PUBLIC include)
+add_library(${PROJECT_NAME} SHARED src/serial.cpp)
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
+
+option(BUILD_EXAMPLES "Build examples" ON)
+message(STATUS "Building examples is ${BUILD_EXAMPLES}")
+if (BUILD_EXAMPLES)
+    add_subdirectory(examples/test)
+    add_subdirectory(examples/structs)
+    add_subdirectory(examples/messages)
+endif()
