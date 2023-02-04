@@ -32,7 +32,7 @@ int main(){
 
     // read data
     msg_t data;
-    int num = ser.read((uint8_t*)&data, sizeof(data));
+    int num = ser.readBytes((uint8_t*)&data, sizeof(data));
     // string ans((char*)&bb, num);
     // string ans = ser.read();
     printf("got: %f %f %f %d\n", data.x, data.y, data.z, data.error);

@@ -142,11 +142,11 @@ int Serial::write(const void* buf, int size){
 
 // Reads the input serial buffer
 // @returns: number of bytes read
-std::string Serial::read(){
+std::string Serial::readString(){
     string ret;
     char c;
     while (true) {
-        int num = guard(::read(fd, (void*)&c, 1), "read(): ");
+        int num = guard(::read(fd, (void*)&c, 1), "readString(): ");
         if (num == 1) ret.push_back(c);
         else break;
     }
@@ -155,12 +155,22 @@ std::string Serial::read(){
 
 // Reads the input serial buffer
 // @returns: number of bytes read
-int Serial::read(uint8_t* buf, int size){
+int Serial::read(){
+    string ret;
+    int c;
+    int num = guard(::read(fd, (void*)&c, 1), "read(): ");
+    if (num <=0) c = -1;
+    return c;
+}
+
+// Reads the input serial buffer
+// @returns: number of bytes read
+int Serial::readBytes(uint8_t* buf, int size){
     int num = 0;
     memset(buf, 0, size);
 
     while (num < size) {
-        num += guard(::read(fd, (void*)&buf[num], size-num), "read(): ");
+        num += guard(::read(fd, (void*)&buf[num], size-num), "readBytes(): ");
     }
 
     return num;

@@ -29,7 +29,7 @@ int main(){
     sleep(1);
 
     msg_t bb;
-    int num = ser.read((uint8_t*)&bb, sizeof(buff));
+    int num = ser.readBytes((uint8_t*)&bb, sizeof(buff));
     string ans((char*)&bb, num);
     // string ans = ser.read();
     printf("got: %s\n", ans.c_str());

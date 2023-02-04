@@ -48,9 +48,12 @@ public:
     bool open(const std::string& port, int speed);
     void close();
     int available(); // in_waiting()
+    int write(const uint8_t buffer);
+    int write(const std::string s);
     int write(const void* buffer, int size);
-    std::string read();
-    int read(uint8_t* buf, int size);
+    int read();
+    std::string readString();
+    int readBytes(uint8_t* buf, int size);
     void flush_input();
     void flush_output();
     void flush();
