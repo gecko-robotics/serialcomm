@@ -4,7 +4,9 @@
 
 # Serial Communications
 
-Under development
+A simple serial communications library, that mimic most of the Arduino serial
+syntax. The goal is to use drivers between Arduino and C++ on linux easier with
+little to no rewrite.
 
 ## Example
 
@@ -17,8 +19,11 @@ int main(){
     ser.open("/dev/serial", B9600);
 
     try {
+        uint8_t buffer[3] = {1,2,3,4};
+        ser.write(buffer, sizeof(buffer));
         std::string msg("hello");
-        ser.write(msg.c_str(), msg.size());
+        ser.write(msg);
+
     }
     catch (const SerialError& e) {
         std::cout << e.what() << std::endl;
@@ -31,6 +36,8 @@ int main(){
 ## Todo
 
 - [ ] namespace ... gecko?
+- [ ] fix the timeout and blocking
+- [ ] determine either: return errors w/error string OR stay with catch/throw on error
 - [x] toggle DTR/RTS pins
 - [x] change version number to date? ex: 2022.6.25 ... version numbers mean nothing but this gives you an idea of what has been done when
 

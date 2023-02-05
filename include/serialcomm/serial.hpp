@@ -46,21 +46,29 @@ public:
     ~Serial();
 
     bool open(const std::string& port, int speed);
+    bool open(int d){fd = d; return true;}
     void close();
-    int available(); // in_waiting()
-    int write(const uint8_t buffer);
-    int write(const std::string s);
+
+    int write(const uint8_t byte);
+    int write(const std::string& s);
     int write(const void* buffer, int size);
+
     int read();
     std::string readString();
     int readBytes(uint8_t* buf, int size);
+
     void flush_input();
     void flush_output();
     void flush();
+
     void set_dtr(bool enabled);
     void set_rts(bool enabled);
-    void setTimeout(int time){}
+
+    void setTimeout(int time);
+
+    int available(); // in_waiting()
 
 protected:
     int fd;
+    // std::string error_string; // is something like this better than throw/catch error?
 };

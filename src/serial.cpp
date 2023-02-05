@@ -10,7 +10,7 @@
 #include <string.h>    // memset
 #include <unistd.h>    // write(), read(), close()
 #include <errno.h>     // errno
-#include <iostream>
+// #include <iostream>
 // #include <sys/file.h> // flock
 
 using namespace std;
@@ -136,7 +136,17 @@ void Serial::close(){
 // Writes packets to the output buffer for transmit
 // @return: bytes written
 int Serial::write(const void* buf, int size){
-    int ret = guard(::write(fd, buf, size), "write(): ");
+    int ret = guard(::write(fd, buf, size), "write(buffer): ");
+    return ret;
+}
+
+int Serial::write(const string& s){
+    int ret = guard(::write(fd, (void*)s.c_str(), s.size()), "write(string): ");
+    return ret;
+}
+
+int Serial::write(const uint8_t byte){
+    int ret = guard(::write(fd, (void*)&byte, 1), "write(byte): ");
     return ret;
 }
 
@@ -201,4 +211,8 @@ void Serial::set_rts(bool enabled){
     int pin = TIOCM_RTS;
     int value = enabled ? TIOCMBIS : TIOCMBIC;
     guard(ioctl(fd, value, &pin), "set_rts(): ");
+}
+
+void Serial::setTimeout(int time) {
+  // FIXME: fix
 }
