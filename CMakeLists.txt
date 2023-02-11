@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-PROJECT(serialcomm VERSION "2023.02.04")
+PROJECT(serialcomm VERSION "2023.02.10")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -35,5 +35,4 @@ if (BUILD_EXAMPLES)
     add_subdirectory(examples/test)
     add_subdirectory(examples/structs)
     add_subdirectory(examples/messages)
-    add_subdirectory(examples/pty)
 endif()
