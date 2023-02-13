@@ -22,7 +22,11 @@ message(STATUS "-------------------------------------")
 
 
 # Build library ----------------------------------------------
-add_library(${PROJECT_NAME} SHARED src/serial.cpp)
+add_library(${PROJECT_NAME}
+    SHARED
+        src/wire.cpp
+        src/serial.cpp
+)
 target_include_directories(${PROJECT_NAME}
     PUBLIC
         $<INSTALL_INTERFACE:include>
@@ -30,9 +34,15 @@ target_include_directories(${PROJECT_NAME}
 )
 
 option(BUILD_EXAMPLES "Build examples" ON)
-message(STATUS "Building examples is ${BUILD_EXAMPLES}")
+message(STATUS "Building serialcomm examples is ${BUILD_EXAMPLES}")
 if (BUILD_EXAMPLES)
     add_subdirectory(examples/test)
     add_subdirectory(examples/structs)
     add_subdirectory(examples/messages)
+endif()
+
+option(BUILD_GTESTS "build gtests" ON)
+message(STATUS "Building serialcomm gtests is ${BUILD_GTESTS}")
+if (BUILD_GTESTS)
+    # add_subdirectory(gtests)
 endif()

@@ -26,13 +26,13 @@ int guard(int err, std::string msg){
     return err;
 }
 
-Serial::Serial(): fd(0) {}
-Serial::~Serial(){ this->close(); }
+Stream::Stream(): fd(0) {}
+Stream::~Stream(){ this->close(); }
 
 /**
  * Get number of bytes waiting to be read.
  */
-int Serial::available(){
+int Stream::available(){
     int bytes;
     guard(ioctl(fd, FIONREAD, &bytes), "available(): ");
     return bytes;
@@ -41,7 +41,7 @@ int Serial::available(){
 // Opens the serial port
 // @port: string containing the file path
 // @return: boolean for was the port opened? True success, false failed
-bool Serial::open(const std::string& port, int speed){
+bool Stream::open(const std::string& port, int speed){
     // struct termios t;
 
     // O_RDWR means that the port is opened for both reading and writing.
@@ -129,30 +129,30 @@ bool Serial::open(const std::string& port, int speed){
 }
 
 // Closes the serial port file descriptor
-void Serial::close(){
+void Stream::close(){
     if (fd > 0) ::close(fd);
 }
 
 // Writes packets to the output buffer for transmit
 // @return: bytes written
-int Serial::write(const void* buf, int size){
+int Stream::write(const void* buf, int size){
     int ret = guard(::write(fd, buf, size), "write(buffer): ");
     return ret;
 }
 
-int Serial::write(const string& s){
+int Stream::write(const string& s){
     int ret = guard(::write(fd, (void*)s.c_str(), s.size()), "write(string): ");
     return ret;
 }
 
-int Serial::write(const uint8_t byte){
+int Stream::write(const uint8_t byte){
     int ret = guard(::write(fd, (void*)&byte, 1), "write(byte): ");
     return ret;
 }
 
 // Reads the input serial buffer
 // @returns: number of bytes read
-std::string Serial::readString(){
+std::string Stream::readString(){
     string ret;
     char c;
     while (true) {
@@ -165,7 +165,7 @@ std::string Serial::readString(){
 
 // Reads the input serial buffer
 // @returns: number of bytes read
-int Serial::read(){
+int Stream::read(){
     string ret;
     int c;
     int num = guard(::read(fd, (void*)&c, 1), "read(): ");
@@ -175,7 +175,7 @@ int Serial::read(){
 
 // Reads the input serial buffer
 // @returns: number of bytes read
-int Serial::readBytes(uint8_t* buf, int size){
+int Stream::readBytes(uint8_t* buf, int size){
     int num = 0;
     memset(buf, 0, size);
 
@@ -187,32 +187,32 @@ int Serial::readBytes(uint8_t* buf, int size){
 }
 
 // Flush input buffer
-void Serial::flush_input(){
+void Stream::flush_input(){
     guard(tcflush(fd, TCIFLUSH), "flush_input(): ");
 }
 
 // Flush output buffer
-void Serial::flush_output(){
+void Stream::flush_output(){
     guard(tcflush(fd, TCOFLUSH), "flush_output(): ");
 }
 
 // Flush both input and output buffers
-void Serial::flush(){
+void Stream::flush(){
     guard(tcflush(fd, TCIOFLUSH), "flush(): ");
 }
 
-void Serial::set_dtr(bool enabled){
+void Stream::set_dtr(bool enabled){
     int pin = TIOCM_DTR;
     int value = enabled ? TIOCMBIS : TIOCMBIC;
     guard(ioctl(fd, value, &pin), "set_dtr(): ");
 }
 
-void Serial::set_rts(bool enabled){
+void Stream::set_rts(bool enabled){
     int pin = TIOCM_RTS;
     int value = enabled ? TIOCMBIS : TIOCMBIC;
     guard(ioctl(fd, value, &pin), "set_rts(): ");
 }
 
-void Serial::setTimeout(int time) {
+void Stream::setTimeout(int time) {
   // FIXME: fix
 }

@@ -40,10 +40,10 @@ protected:
 /**
  * Serial port
  */
-class Serial {
+class Stream {
 public:
-    Serial();
-    ~Serial();
+    Stream();
+    ~Stream();
 
     bool open(const std::string& port, int speed);
     bool open(int d){fd = d; return true;}
@@ -71,4 +71,8 @@ public:
 protected:
     int fd;
     // std::string error_string; // is something like this better than throw/catch error?
+};
+
+class SerialPort: public Stream {
+
 };

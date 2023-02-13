@@ -15,7 +15,7 @@ little to no rewrite.
 #include <string>
 
 int main(){
-    Serial ser;
+    SerialPort ser;
     ser.open("/dev/serial", B9600);
 
     try {

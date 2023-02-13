@@ -17,7 +17,7 @@ int main(){
     string port{"/dev/cu.usbmodem14601"};
     string msg{"g"};
 
-    Serial ser;
+    SerialPort ser;
     try {
         ser.open(port, B1000000);
     }
