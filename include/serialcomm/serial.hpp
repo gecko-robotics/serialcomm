@@ -46,6 +46,8 @@ public:
   Stream();
   ~Stream();
 
+  void begin(int i) {}
+
   bool open(const std::string &port, int speed);
   bool open(int d) {
     fd = d;
@@ -56,6 +58,9 @@ public:
   int write(const uint8_t byte);
   int write(const std::string &s);
   int write(const void *buffer, int size);
+
+  inline void print(const std::string &s) { write(s); }
+  inline void println(const std::string &s) { write(s + "\n"); }
 
   int read();
   std::string readString();
@@ -71,6 +76,8 @@ public:
   void setTimeout(int time);
 
   int available(); // in_waiting()
+
+  inline explicit operator bool() const noexcept { return bool(fd); }
 
 protected:
   int fd;
