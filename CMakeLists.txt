@@ -33,7 +33,8 @@ endif()
 # Build library ----------------------------------------------
 add_library(${PROJECT_NAME}
     SHARED
-        src/wire.cpp
+        src/wire_linux.cpp
+        src/wire_apple.cpp
         src/serial.cpp
 )
 target_include_directories(${PROJECT_NAME}
@@ -42,7 +43,7 @@ target_include_directories(${PROJECT_NAME}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-# option(BUILD_EXAMPLES "Build examples" ON)
+# ----------------------------------------------
 message(STATUS "Building ${PROJECT_NAME} examples is ${BUILD_EXAMPLES}")
 if (BUILD_EXAMPLES)
     add_subdirectory(examples/test)
@@ -50,7 +51,7 @@ if (BUILD_EXAMPLES)
     add_subdirectory(examples/messages)
 endif()
 
-# option(BUILD_GTESTS "build gtests" ON)
+# ----------------------------------------------
 message(STATUS "Building ${PROJECT_NAME} gtests is ${BUILD_GTESTS}")
 if (BUILD_GTESTS)
     add_subdirectory(gtests)

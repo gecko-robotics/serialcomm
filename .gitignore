@@ -3,6 +3,7 @@
 build
 archive
 dev
+old
 
 # Prerequisites
 *.d
