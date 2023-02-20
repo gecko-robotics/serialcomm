@@ -10,14 +10,14 @@
 
 // error messages
 constexpr uint8_t MSG_NO_ERROR = 0;
-constexpr uint8_t MSG_ERROR = 1;
+constexpr uint8_t MSG_ERROR    = 1;
 
 // message types
-constexpr uint8_t MSG_RAW_IMU = 0x41;
-constexpr uint8_t MSG_IMU = 0x42;
-constexpr uint8_t MSG_TWIST = 0x43;
-constexpr uint8_t MSG_WRENCH = 0x44;
-constexpr uint8_t MSG_POSE = 0x45;
+constexpr uint8_t MSG_RAW_IMU     = 0x41;
+constexpr uint8_t MSG_IMU         = 0x42;
+constexpr uint8_t MSG_TWIST       = 0x43;
+constexpr uint8_t MSG_WRENCH      = 0x44;
+constexpr uint8_t MSG_POSE        = 0x45;
 constexpr uint8_t MSG_ATMOSPHERIC = 0x46;
 
 /*

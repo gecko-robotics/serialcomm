@@ -13,7 +13,7 @@ int main() {
   // uint32_t now = (uint32_t) time(NULL);
   uint64_t now = time(NULL);
   atmospheric_t a;
-  a.pressure = 1;
+  a.pressure    = 1;
   a.temperature = 2;
   // a.error = MSG_NO_ERROR;
   a.timestamp = now;

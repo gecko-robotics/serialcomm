@@ -79,11 +79,11 @@ bool Stream::open(const std::string &port, int speed) {
   // t.c_cflag = B1000000 | CS8 | CLOCAL | CREAD;
   // t.c_cflag = B57600 | CS8 | CLOCAL | CREAD;
   // t.c_cflag = B19200 | CS8 | CLOCAL | CREAD;
-  t.c_iflag = IGNPAR;
-  t.c_oflag = 0;
-  t.c_lflag = 0;
+  t.c_iflag     = IGNPAR;
+  t.c_oflag     = 0;
+  t.c_lflag     = 0;
   t.c_cc[VTIME] = 0; // 10th of second, 1 = 0.1 sec, time to block before return
-  t.c_cc[VMIN] = 0;  // min number of characters before return
+  t.c_cc[VMIN]  = 0; // min number of characters before return
 
   // t.c_cflag |= (tcflag_t) (CLOCAL | CREAD);
   // t.c_cflag &= B1000000;
@@ -130,8 +130,7 @@ bool Stream::open(const std::string &port, int speed) {
 
 // Closes the serial port file descriptor
 void Stream::close() {
-  if (fd > 0)
-    ::close(fd);
+  if (fd > 0) ::close(fd);
 }
 
 // Writes packets to the output buffer for transmit
@@ -158,10 +157,8 @@ std::string Stream::readString() {
   char c;
   while (true) {
     int num = guard(::read(fd, (void *)&c, 1), "readString(): ");
-    if (num == 1)
-      ret.push_back(c);
-    else
-      break;
+    if (num == 1) ret.push_back(c);
+    else break;
   }
   return ret;
 }
@@ -172,8 +169,7 @@ int Stream::read() {
   // string ret;
   int c;
   int num = guard(::read(fd, (void *)&c, 1), "read(): ");
-  if (num <= 0)
-    c = -1;
+  if (num <= 0) c = -1;
   return c;
 }
 
@@ -202,13 +198,13 @@ void Stream::flush_output() {
 void Stream::flush() { guard(tcflush(fd, TCIOFLUSH), "flush(): "); }
 
 void Stream::set_dtr(bool enabled) {
-  int pin = TIOCM_DTR;
+  int pin   = TIOCM_DTR;
   int value = enabled ? TIOCMBIS : TIOCMBIC;
   guard(ioctl(fd, value, &pin), "set_dtr(): ");
 }
 
 void Stream::set_rts(bool enabled) {
-  int pin = TIOCM_RTS;
+  int pin   = TIOCM_RTS;
   int value = enabled ? TIOCMBIS : TIOCMBIC;
   guard(ioctl(fd, value, &pin), "set_rts(): ");
 }

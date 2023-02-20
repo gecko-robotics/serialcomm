@@ -9,9 +9,9 @@
 #include <stdlib.h>
 #include <unistd.h> // close
 #if defined(__APPLE__)
-#include <util.h>
+  #include <util.h>
 #elif defined(linux)
-#include <pty.h>
+  #include <pty.h>
 #endif
 
 /*
@@ -39,7 +39,7 @@ struct SerialPipe {
     unlockpt(masterfd);
     char *slavename = ptsname(masterfd);
 
-    slavefd = ::open(slavename, O_RDWR | O_NOCTTY);
+    slavefd         = ::open(slavename, O_RDWR | O_NOCTTY);
     // slavefd = ::open(slavename, O_RDWR | O_NOCTTY | O_NONBLOCK);
 
     // fixes slave write, master read issue -----

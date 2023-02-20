@@ -22,12 +22,12 @@ protected:
 // macos is broken!!!
 // define some higher, missing data rates
 #ifndef B1000000
-#define B1000000 0010010
-#define B2000000 0010013
-#define B2500000 0010014
-#define B3000000 0010015
-#define B3500000 0010016
-#define B4000000 0010017
+  #define B1000000 0010010
+  #define B2000000 0010013
+  #define B2500000 0010014
+  #define B3000000 0010015
+  #define B3500000 0010016
+  #define B4000000 0010017
 #endif
 
 // typedef struct {
@@ -73,7 +73,7 @@ public:
 
   void setTimeout(int time);
 
-  int available(); // in_waiting()
+  int available();                 // in_waiting()
   inline int peek() { return -1; } // FIXME: can I do thiis?
   // int peek() {
   //   int c = fgetc(fd);

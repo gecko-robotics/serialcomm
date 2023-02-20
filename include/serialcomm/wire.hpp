@@ -56,14 +56,14 @@ dtparam=i2c_arm=on,i2c_arm_baudrate=400000
 #pragma once
 
 #ifndef TwoWire_h
-#define TwoWire_h
+  #define TwoWire_h
 #endif
 
 #if defined(linux)
 // sudo apt-get install libi2c-dev
 extern "C" {
-#include <i2c/smbus.h>
-#include <linux/i2c-dev.h>
+  #include <i2c/smbus.h>
+  #include <linux/i2c-dev.h>
 }
 #endif
 

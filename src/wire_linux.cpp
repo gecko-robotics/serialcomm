@@ -24,19 +24,19 @@ bool TwoWire::read(const uint8_t reg, const uint8_t count,
   // if (count > I2C_MAX_BUFFER_SIZE) count = I2C_MAX_BUFFER_SIZE;
 
   // send out to sensor
-  msgs[0].addr = addr;
+  msgs[0].addr  = addr;
   msgs[0].flags = 0;
-  msgs[0].len = 1;
-  msgs[0].buf = outbuf;
-  outbuf[0] = reg;
+  msgs[0].len   = 1;
+  msgs[0].buf   = outbuf;
+  outbuf[0]     = reg;
 
   // read in from sensor
-  msgs[1].addr = addr;
-  msgs[1].flags = I2C_M_RD; // read data, from slave to master
-  msgs[1].len = count;
-  msgs[1].buf = data; // inbuf;
+  msgs[1].addr   = addr;
+  msgs[1].flags  = I2C_M_RD; // read data, from slave to master
+  msgs[1].len    = count;
+  msgs[1].buf    = data; // inbuf;
 
-  i2c_data.msgs = msgs;
+  i2c_data.msgs  = msgs;
   i2c_data.nmsgs = 2;
 
   if (ioctl(fd, I2C_RDWR, &i2c_data) < 0) {
@@ -52,12 +52,12 @@ bool TwoWire::write(const uint8_t reg, const uint8_t data) {
   outbuf[1] = data;
   // memcpy(&outbuf[1], &data, len);
 
-  msgs[0].addr = addr;
-  msgs[0].flags = 0;
-  msgs[0].len = 2;
-  msgs[0].buf = outbuf;
+  msgs[0].addr   = addr;
+  msgs[0].flags  = 0;
+  msgs[0].len    = 2;
+  msgs[0].buf    = outbuf;
 
-  i2c_data.msgs = msgs;
+  i2c_data.msgs  = msgs;
   i2c_data.nmsgs = 1;
 
   if (ioctl(fd, I2C_RDWR, &i2c_data) < 0) {
