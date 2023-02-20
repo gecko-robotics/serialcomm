@@ -5,11 +5,9 @@
 \**************************************************/
 #pragma once
 
-#include <cstdint>
+#include <cstdint> // uint8_t
 #include <exception>
 #include <string>
-#include <termios.h>
-#include <vector>
 
 class SerialError : public std::exception {
 public:
@@ -46,7 +44,7 @@ public:
   Stream();
   ~Stream();
 
-  void begin(int i) {}
+  void begin(int i) {} // does nothing
 
   bool open(const std::string &port, int speed);
   bool open(int d) {
@@ -76,6 +74,12 @@ public:
   void setTimeout(int time);
 
   int available(); // in_waiting()
+  inline int peek() { return -1; } // FIXME: can I do thiis?
+  // int peek() {
+  //   int c = fgetc(fd);
+  //   ungetc(c, fd);
+  //   return c;
+  // }
 
   inline explicit operator bool() const noexcept { return bool(fd); }
 

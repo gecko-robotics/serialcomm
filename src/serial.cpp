@@ -169,7 +169,7 @@ std::string Stream::readString() {
 // Reads the input serial buffer
 // @returns: number of bytes read
 int Stream::read() {
-  string ret;
+  // string ret;
   int c;
   int num = guard(::read(fd, (void *)&c, 1), "read(): ");
   if (num <= 0)
