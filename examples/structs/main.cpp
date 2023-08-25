@@ -1,7 +1,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <iostream>
-#include <serialcomm/serial.hpp>
+#include <serialcomm/serialcomm.hpp>
 #include <string>
 #include <unistd.h>
 

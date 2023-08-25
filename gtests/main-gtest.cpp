@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <serialcomm/serialcomm.hpp>
 
 // Demonstrate some basic assertions.
 TEST(gciSensors, dummy) {
