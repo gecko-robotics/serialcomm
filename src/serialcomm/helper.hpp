@@ -1,10 +1,13 @@
-
-#include <errno.h>     // errno
-#include <string>
-#include <exception>
-
+/**************************************************\
+* The MIT License (MIT)
+* Copyright (c) 2019 Kevin Walchko
+* see LICENSE for full details
+\**************************************************/
 #pragma once
 
+#include <errno.h> // errno
+#include <exception>
+#include <string>
 
 class SerialError : public std::exception {
 public:

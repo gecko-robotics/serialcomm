@@ -35,11 +35,10 @@ int main(){
 
 ## Todo
 
-- [ ] namespace ... gecko?
 - [ ] fix the timeout and blocking
 - [ ] determine either: return errors w/error string OR stay with catch/throw on error
 - [x] toggle DTR/RTS pins
-- [x] change version number to date? ex: 2022.6.25 ... version numbers mean nothing but this gives you an idea of what has been done when
+- [x] move i2c code to different library
 
 ## Reference
 

@@ -9,12 +9,12 @@
 #include <exception>
 #include <string>
 // #include <errno.h>     // errno
+#include "helper.hpp"  // guard, get_error
 #include <fcntl.h>     // open
 #include <string.h>    // memset
 #include <sys/ioctl.h> // ioctl, dtr or rts
 #include <termios.h>   // serial
 #include <unistd.h>    // write(), read(), close()
-#include "helper.hpp"  // guard, get_error
 
 // class SerialError : public std::exception {
 // public:
@@ -56,9 +56,10 @@ public:
   bool open(const std::string &port, int speed) {
 
     // O_RDWR means that the port is opened for both reading and writing.
-    // O_NOCTTY means that no terminal will control the process opening the serial
-    // port.
-    guard(fd = ::open(port.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK), "open(): ");
+    // O_NOCTTY means that no terminal will control the process opening the
+    // serial port.
+    guard(fd = ::open(port.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK),
+          "open(): ");
 
     this->flush();
 
@@ -66,11 +67,12 @@ public:
     memset(&t, 0, sizeof(t)); // clear struct for new port settings
 
     t.c_cflag = speed | CS8 | CLOCAL | CREAD;
-    t.c_iflag     = IGNPAR;
-    t.c_oflag     = 0;
-    t.c_lflag     = 0;
-    t.c_cc[VTIME] = 0; // 10th of second, 1 = 0.1 sec, time to block before return
-    t.c_cc[VMIN]  = 0; // min number of characters before return
+    t.c_iflag = IGNPAR;
+    t.c_oflag = 0;
+    t.c_lflag = 0;
+    t.c_cc[VTIME] =
+        0; // 10th of second, 1 = 0.1 sec, time to block before return
+    t.c_cc[VMIN] = 0; // min number of characters before return
 
     // clean the buffer and activate the settings for the port
     guard(tcflush(fd, TCIFLUSH), "open(): ");
@@ -93,7 +95,8 @@ public:
     return ret;
   }
   int write(const std::string &s) {
-    int ret = guard(::write(fd, (void *)s.c_str(), s.size()), "write(string): ");
+    int ret =
+        guard(::write(fd, (void *)s.c_str(), s.size()), "write(string): ");
     return ret;
   }
   int write(const void *buffer, int size) {
@@ -148,7 +151,8 @@ public:
     guard(ioctl(fd, value, &pin), "set_rts(): ");
   }
 
-  void setTimeout(int time) { /* FIXME */}
+  void setTimeout(int time) { /* FIXME */
+  }
 
   int available() {
     int bytes;

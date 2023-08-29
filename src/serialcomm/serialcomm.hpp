@@ -5,16 +5,15 @@
 \**************************************************/
 #pragma once
 
-
-#include "serial_port.hpp"
 #include "mock_serial.hpp"
+#include "serial_port.hpp"
 
-#ifndef TwoWire_h
-  #define TwoWire_h
-#endif
+// #ifndef TwoWire_h
+//   #define TwoWire_h
+// #endif
 
-#if defined(linux)
-  #include "wire_linux.hpp"
-#elif defined(__APPLE__)
-  #include "wire_apple.hpp"
-#endif
+// #if defined(linux)
+//   #include "wire_linux.hpp"
+// #elif defined(__APPLE__)
+//   #include "wire_apple.hpp"
+// #endif
