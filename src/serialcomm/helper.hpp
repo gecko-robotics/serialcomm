@@ -6,27 +6,29 @@
 #pragma once
 
 #include <errno.h> // errno
-#include <exception>
+// #include <exception>
 #include <string>
 
-class SerialError : public std::exception {
-public:
-  SerialError(const std::string &s) : msg(s) {}
-  SerialError() : msg("Serial Error") {}
-  const char *what() const throw() { return msg.c_str(); }
+// class SerialError : public std::exception {
+// public:
+//   SerialError(const std::string &s) : msg(s) {}
+//   SerialError() : msg("Serial Error") {}
+//   const char *what() const throw() { return msg.c_str(); }
 
-protected:
-  std::string msg;
-};
+// protected:
+//   std::string msg;
+// };
 
+static
 std::string getError() {
   extern int errno;
   return std::string(strerror(int(errno)));
 }
 
-int guard(int err, std::string msg) {
-  if (err < 0) {
-    throw SerialError(msg + getError());
-  }
-  return err;
-}
+// inline
+// int guard(int err, std::string msg) {
+//   if (err < 0) {
+//     throw SerialError(msg + getError());
+//   }
+//   return err;
+// }

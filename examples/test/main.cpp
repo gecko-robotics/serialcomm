@@ -17,12 +17,7 @@ int main() {
   string msg{"hello"};
 
   SerialPort ser;
-  try {
-    ser.open(port, B2000000);
-  } catch (const SerialError &e) {
-    cout << e.what() << endl;
-    exit(1);
-  }
+  bool ok = ser.open(port, B2000000);
 
   ser.write(msg.c_str(), msg.size());
   sleep(1);
