@@ -18,12 +18,12 @@ int main() {
   string msg{"g"};
 
   SerialPort ser;
-  try {
-    ser.open(port, B1000000);
-  } catch (const SerialError &e) {
-    cout << e.what() << endl;
-    exit(1);
-  }
+  // try {
+  ser.open(port, B1000000);
+  // } catch (const SerialError &e) {
+  //   cout << e.what() << endl;
+  //   exit(1);
+  // }
 
   // send "get data" command
   ser.write(msg.c_str(), msg.size());

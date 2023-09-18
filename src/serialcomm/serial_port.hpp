@@ -43,6 +43,27 @@
 //     std::vector<uint8_t> params;
 // } status_t;
 
+// enum class SerialError: int {
+//   OK = 0,
+//   ERROR_OPEN,
+//   ERROR_FLUSH,
+//   ERROR_IN_FLUSH,
+//   ERROR_OUT_FLUSH,
+//   ERROR_SET,
+//   ERROR_SET_DTR,
+//   ERROR_SET_RTS,
+//   ERROR_AVAILABLE,
+//   ERROR_TIMEOUT,
+//   ERROR_PEAK
+// };
+
+// inline
+// SerialError guard(int err, SerialError val) {
+//   if (err < 0) return val;
+//     // throw SerialError(msg + getError());
+//   return SerialError::OK;
+// }
+
 /**
  * Serial port
  */
@@ -58,10 +79,13 @@ public:
     // O_RDWR means that the port is opened for both reading and writing.
     // O_NOCTTY means that no terminal will control the process opening the
     // serial port.
-    guard(fd = ::open(port.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK),
-          "open(): ");
+    fd = ::open(port.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
+    if (fd < 0) {
+      fd = 0;
+      return false;
+    }
 
-    this->flush();
+    this->flush(); // value?
 
     struct termios t;
     memset(&t, 0, sizeof(t)); // clear struct for new port settings
@@ -70,13 +94,16 @@ public:
     t.c_iflag = IGNPAR;
     t.c_oflag = 0;
     t.c_lflag = 0;
-    t.c_cc[VTIME] =
-        0; // 10th of second, 1 = 0.1 sec, time to block before return
-    t.c_cc[VMIN] = 0; // min number of characters before return
+
+    // VTIME: 10th of second, 1 = 0.1 sec, time to block
+    // before return
+    t.c_cc[VTIME] = 0;
+    // VMIN: min number of characters before return
+    t.c_cc[VMIN] = 0;
 
     // clean the buffer and activate the settings for the port
-    guard(tcflush(fd, TCIFLUSH), "open(): ");
-    guard(tcsetattr(fd, TCSANOW, &t), "open(): ");
+    if (tcflush(fd, TCIFLUSH) < 0) return false;
+    if (tcsetattr(fd, TCSANOW, &t) < 0) return false;
 
     return true;
   }
@@ -91,17 +118,17 @@ public:
   }
 
   int write(const uint8_t byte) {
-    int ret = guard(::write(fd, (void *)&byte, 1), "write(byte): ");
-    return ret;
+    // int ret = guard(::write(fd, (void *)&byte, 1), "write(byte): ");
+    return ::write(fd, (void *)&byte, 1);
   }
   int write(const std::string &s) {
-    int ret =
-        guard(::write(fd, (void *)s.c_str(), s.size()), "write(string): ");
-    return ret;
+    // int ret =
+    //     guard(::write(fd, (void *)s.c_str(), s.size()), "write(string): ");
+    return ::write(fd, (void *)s.c_str(), s.size());
   }
   int write(const void *buffer, int size) {
-    int ret = guard(::write(fd, buffer, size), "write(buffer): ");
-    return ret;
+    // int ret = guard(::write(fd, buffer, size), "write(buffer): ");
+    return ::write(fd, buffer, size);
   }
 
   inline void print(const std::string &s) { write(s); }
@@ -110,53 +137,72 @@ public:
   int read() {
     // std::string ret;
     int c;
-    int num = guard(::read(fd, (void *)&c, 1), "read(): ");
-    if (num <= 0) c = -1;
+    int num = ::read(fd, (void *)&c, 1);
+    // int num = guard(::read(fd, (void *)&c, 1), "read(): ");
+    if (num <= 0) c = -1; // timeout if non-blocking
     return c;
   }
 
   std::string readString() {
     std::string ret;
     char c;
-    while (true) {
-      int num = guard(::read(fd, (void *)&c, 1), "readString(): ");
-      if (num == 1) ret.push_back(c);
-      else break;
+    int num = available();
+    for (int i=0; i < num; ++i) {
+      int num = ::read(fd, (void *)&c, 1); //guard(::read(fd, (void *)&c, 1), "readString(): ");
+      if (num < 0) break;
+      ret.push_back(c);
     }
     return ret;
   }
+
   int readBytes(uint8_t *buf, int size) {
     int num = 0;
     memset(buf, 0, size);
 
     while (num < size) {
-      num += guard(::read(fd, (void *)&buf[num], size - num), "readBytes(): ");
+      int err = ::read(fd, (void *)&buf[num], size - num); //guard(::read(fd, (void *)&buf[num], size - num), "readBytes(): ");
+      if (err < 0) return err;
+      num += err;
     }
 
     return num;
   }
 
-  void flush_input() { guard(tcflush(fd, TCIFLUSH), "flush_input(): "); }
-  void flush_output() { guard(tcflush(fd, TCOFLUSH), "flush_output(): "); }
-  void flush() { guard(tcflush(fd, TCIOFLUSH), "flush(): "); }
+  bool flush_input() {
+    if (tcflush(fd, TCIFLUSH) < 0) return false;
+    return true;
+  }
 
-  void set_dtr(bool enabled) {
+  bool flush_output() {
+    if (tcflush(fd, TCOFLUSH) < 0) return false;
+    return true;
+  }
+
+  bool flush() {
+    if (tcflush(fd, TCIOFLUSH) < 0) return false;
+    return true;
+  }
+
+  bool set_dtr(bool enabled) {
     int pin   = TIOCM_DTR;
     int value = enabled ? TIOCMBIS : TIOCMBIC;
-    guard(ioctl(fd, value, &pin), "set_dtr(): ");
-  }
-  void set_rts(bool enabled) {
-    int pin   = TIOCM_RTS;
-    int value = enabled ? TIOCMBIS : TIOCMBIC;
-    guard(ioctl(fd, value, &pin), "set_rts(): ");
+    if (ioctl(fd, value, &pin) < 0) return false;
+    return true;
   }
 
-  void setTimeout(int time) { /* FIXME */
+  bool set_rts(bool enabled) {
+    int pin   = TIOCM_RTS;
+    int value = enabled ? TIOCMBIS : TIOCMBIC;
+    if (ioctl(fd, value, &pin) < 0) return false;
+    return true;
   }
+
+  bool setTimeout(int time) { /* FIXME */ return false;}
 
   int available() {
     int bytes;
-    guard(ioctl(fd, FIONREAD, &bytes), "available(): ");
+    // guard(ioctl(fd, FIONREAD, &bytes), "available(): ");
+    if (ioctl(fd, FIONREAD, &bytes) < 0) return -1;
     return bytes;
   }
 

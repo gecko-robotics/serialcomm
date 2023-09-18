@@ -10,24 +10,24 @@ little to no rewrite.
 
 ## Example
 
-```c++
+```cpp
 #include <serialcomm/serial.hpp>
 #include <string>
+#include <iostream>
 
-int main(){
+using namespace std;
+
+int main() {
     SerialPort ser;
-    ser.open("/dev/serial", B9600);
+    bool ok = ser.open("/dev/serial", B9600);
 
-    try {
-        uint8_t buffer[3] = {1,2,3,4};
-        ser.write(buffer, sizeof(buffer));
-        std::string msg("hello");
-        ser.write(msg);
+    uint8_t buffer[3] = {1,2,3,4};
+    int num = ser.write(buffer, sizeof(buffer)); // -1 for error
+    if (num < 0) cout << "error" << endl;
+    std::string msg("hello");
+    ser.write(msg);
 
-    }
-    catch (const SerialError& e) {
-        std::cout << e.what() << std::endl;
-    }
+    ser.close();
 
     return 0
 }
@@ -36,7 +36,7 @@ int main(){
 ## Todo
 
 - [ ] fix the timeout and blocking
-- [ ] determine either: return errors w/error string OR stay with catch/throw on error
+- [x] determine either: return errors w/error string OR stay with catch/throw on error
 - [x] toggle DTR/RTS pins
 - [x] move i2c code to different library
 
