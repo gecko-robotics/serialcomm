@@ -85,7 +85,7 @@ public:
       return false;
     }
 
-    this->flush(); // value?
+    // this->flush(); // value?
 
     struct termios t;
     memset(&t, 0, sizeof(t)); // clear struct for new port settings
@@ -102,7 +102,7 @@ public:
     t.c_cc[VMIN] = 0;
 
     // clean the buffer and activate the settings for the port
-    if (tcflush(fd, TCIFLUSH) < 0) return false;
+    // if (tcflush(fd, TCIFLUSH) < 0) return false;
     if (tcsetattr(fd, TCSANOW, &t) < 0) return false;
 
     return true;
