@@ -23,6 +23,10 @@ SOFTWARE.
 \********************************************************************************/
 #pragma once
 
-#include "errno.hpp"
-#include "mock_serial.hpp"
-#include "serial_port.hpp"
+#include <errno.h> // errno
+#include <string>
+
+static std::string getErrorString() {
+  extern int errno;
+  return std::string(strerror(int(errno)));
+}

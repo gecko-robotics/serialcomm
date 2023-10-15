@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
+#include <iostream>
 #include <serialcomm/serialcomm.hpp>
 #include <string>
-#include <iostream>
 
 using namespace std;
 
@@ -18,11 +18,13 @@ TEST(serialcomm, port) {
   bool ok = ser.open(port, B2000000);
   EXPECT_FALSE(ok);
   EXPECT_FALSE(ser);
+  EXPECT_FALSE(ser.is_open());
   ser.close();
 }
 
 TEST(serialcomm, read_write_byte) {
   SerialPipe sp; // create virtual serial port for testing
+  sp.init();
 
   SerialPort s;
   bool ok = s.open(sp.masterfd);
@@ -47,9 +49,9 @@ TEST(serialcomm, read_write_byte) {
   p.close();
 }
 
-
 TEST(serialcomm, read_write_string) {
   SerialPipe sp; // create virtual serial port for testing
+  sp.init();
 
   SerialPort s;
   bool ok = s.open(sp.masterfd);
@@ -61,7 +63,7 @@ TEST(serialcomm, read_write_string) {
 
   // read-write string -------------------
   string msg = "hello";
-  int num = s.write(msg);
+  int num    = s.write(msg);
   EXPECT_EQ(num, 5);
 
   num = p.available();
@@ -81,9 +83,9 @@ TEST(serialcomm, read_write_string) {
   p.close();
 }
 
-
 TEST(serialcomm, read_write_buffer) {
   SerialPipe sp; // create virtual serial port for testing
+  sp.init();
 
   SerialPort s;
   bool ok = s.open(sp.masterfd);
@@ -94,15 +96,15 @@ TEST(serialcomm, read_write_buffer) {
   EXPECT_TRUE(ok);
 
   // read-write buffer -------------------
-  msg_t m{1,2,3,4};
-  int num = s.write((void*)&m, sizeof(msg_t));
+  msg_t m{1, 2, 3, 4};
+  int num = s.write((void *)&m, sizeof(msg_t));
   EXPECT_EQ(num, 16);
 
   num = p.available();
   EXPECT_EQ(num, 16);
 
   msg_t n;
-  num = p.readBytes((uint8_t*)&n, sizeof(n));
+  num = p.readBytes((uint8_t *)&n, sizeof(n));
   EXPECT_EQ(num, 16);
   EXPECT_EQ(m.x, n.x);
   EXPECT_EQ(m.y, n.y);

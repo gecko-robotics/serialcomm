@@ -30,37 +30,58 @@ cflags: cs8 -parenb
 */
 
 struct SerialPipe {
-  // public:
-  SerialPipe() {
-    masterfd = ::open("/dev/ptmx", O_RDWR | O_NOCTTY);
-    // masterfd = ::open("/dev/ptmx", O_RDWR | O_NOCTTY | O_NONBLOCK);
+  SerialPipe() : masterfd(0), slavefd(0) {}
 
-    grantpt(masterfd);
-    unlockpt(masterfd);
-    char *slavename = ptsname(masterfd);
-
-    slavefd         = ::open(slavename, O_RDWR | O_NOCTTY);
-    // slavefd = ::open(slavename, O_RDWR | O_NOCTTY | O_NONBLOCK);
-
-    // fixes slave write, master read issue -----
-    // https://stackoverflow.com/questions/23459520/how-to-read-write-
-    //   to-linux-pseudoterminals-using-separate-processes-but-without
-    struct termios ts;
-    if (tcgetattr(slavefd, &ts)) {
-      perror("tcgetattr");
-      exit(1);
-    }
-    cfmakeraw(&ts);
-    tcsetattr(slavefd, TCSANOW, &ts);
-
-    // cout << "master " << masterfd << endl;
-    // cout << "slave " << ttyname(slavefd) << " " << slavefd << endl;
-  }
   ~SerialPipe() {
     close(masterfd);
     close(slavefd);
   }
 
+  bool init(bool info = false) {
+    masterfd = ::open("/dev/ptmx", O_RDWR | O_NOCTTY);
+    if (masterfd == -1) {
+      perror("Couldn't open /dev/ptmx");
+      return false;
+    }
+
+    grantpt(masterfd);
+    unlockpt(masterfd);
+    char *slavename = ptsname(masterfd);
+    if (slavename == NULL) {
+      perror("Couldn't get slave pseudoterminal");
+      return false;
+    }
+
+    slavefd = ::open(slavename, O_RDWR | O_NOCTTY);
+    if (slavefd == -1) {
+      perror("Couldn't open slave pseudoterminal");
+      return false;
+    }
+
+    tty = std::string(slavename);
+
+    // fixes slave write, master read issue -----
+    // https://stackoverflow.com/questions/23459520/how-to-read-write-to-linux-pseudoterminals-using-separate-processes-but-without
+    struct termios ts;
+    if (tcgetattr(slavefd, &ts)) {
+      perror("tcgetattr");
+      return false;
+    }
+    cfmakeraw(&ts);
+    tcsetattr(slavefd, TCSANOW, &ts);
+    // tty = ttyname(slavefd); // use ptsname instead
+
+    if (info) {
+      printf("-----------------------------------------------\n");
+      printf("| Master fd: %d\n", masterfd);
+      printf("| Slave fd: %d  tty: %s\n", slavefd, tty.c_str());
+      printf("-----------------------------------------------\n");
+    }
+
+    return true;
+  }
+
   int masterfd;
   int slavefd;
+  std::string tty;
 };

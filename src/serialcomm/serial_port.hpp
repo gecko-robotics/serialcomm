@@ -1,15 +1,32 @@
-/**************************************************\
-* The MIT License (MIT)
-* Copyright (c) 2019 Kevin Walchko
-* see LICENSE for full details
-\**************************************************/
+/*******************************************************************************\
+MIT License
+
+Copyright (c) 2019 Kevin J. Walchko
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+\********************************************************************************/
 #pragma once
 
 #include <cstdint> // uint8_t
 #include <exception>
 #include <string>
 // #include <errno.h>     // errno
-#include "helper.hpp"  // guard, get_error
 #include <fcntl.h>     // open
 #include <string.h>    // memset
 #include <sys/ioctl.h> // ioctl, dtr or rts
@@ -85,8 +102,6 @@ public:
       return false;
     }
 
-    // this->flush(); // value?
-
     struct termios t;
     memset(&t, 0, sizeof(t)); // clear struct for new port settings
 
@@ -101,8 +116,7 @@ public:
     // VMIN: min number of characters before return
     t.c_cc[VMIN] = 0;
 
-    // clean the buffer and activate the settings for the port
-    // if (tcflush(fd, TCIFLUSH) < 0) return false;
+    // activate the settings for the port
     if (tcsetattr(fd, TCSANOW, &t) < 0) return false;
 
     return true;
@@ -147,8 +161,10 @@ public:
     std::string ret;
     char c;
     int num = available();
-    for (int i=0; i < num; ++i) {
-      int num = ::read(fd, (void *)&c, 1); //guard(::read(fd, (void *)&c, 1), "readString(): ");
+    for (int i = 0; i < num; ++i) {
+      int num =
+          ::read(fd, (void *)&c,
+                 1); // guard(::read(fd, (void *)&c, 1), "readString(): ");
       if (num < 0) break;
       ret.push_back(c);
     }
@@ -160,7 +176,9 @@ public:
     memset(buf, 0, size);
 
     while (num < size) {
-      int err = ::read(fd, (void *)&buf[num], size - num); //guard(::read(fd, (void *)&buf[num], size - num), "readBytes(): ");
+      int err = ::read(fd, (void *)&buf[num],
+                       size - num); // guard(::read(fd, (void *)&buf[num], size
+                                    // - num), "readBytes(): ");
       if (err < 0) return err;
       num += err;
     }
@@ -197,7 +215,9 @@ public:
     return true;
   }
 
-  bool setTimeout(int time) { /* FIXME */ return false;}
+  bool setTimeout(int time) { /* FIXME */
+    return false;
+  }
 
   int available() {
     int bytes;
@@ -214,6 +234,8 @@ public:
   // }
 
   inline explicit operator bool() const noexcept { return bool(fd); }
+
+  inline const bool is_open() const { return (fd > 0) ? true : false; }
 
 protected:
   int fd;

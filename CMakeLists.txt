@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-PROJECT(serialcomm VERSION "2023.08.28")
+PROJECT(serialcomm VERSION "2023.10.15")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -40,30 +40,13 @@ else()
     set(BUILD_GTESTS OFF)
 endif()
 
-
-# Build library ----------------------------------------------
-# add_library(${PROJECT_NAME}
-#     SHARED
-#         src/wire_linux.cpp
-#         src/wire_apple.cpp
-#         src/serial.cpp
-# )
-# target_include_directories(${PROJECT_NAME}
-#     PUBLIC
-#         $<INSTALL_INTERFACE:include>
-#         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-# )
-
-
 add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(${PROJECT_NAME} INTERFACE src/)
 
 # ----------------------------------------------
 message(STATUS "Building ${PROJECT_NAME} examples is ${BUILD_EXAMPLES}")
 if (BUILD_EXAMPLES)
-    add_subdirectory(examples/test)
-    add_subdirectory(examples/structs)
-    # add_subdirectory(examples/messages)
+    add_subdirectory(examples)
 endif()
 
 # ----------------------------------------------
