@@ -24,7 +24,7 @@ SOFTWARE.
 #pragma once
 
 #include <cstdint> // uint8_t
-#include <exception>
+// #include <exception>
 #include <string>
 // #include <errno.h>     // errno
 #include <fcntl.h>     // open

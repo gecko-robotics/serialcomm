@@ -10,8 +10,9 @@
 #include <unistd.h> // close
 #if defined(__APPLE__)
   #include <util.h>
-#elif defined(linux)
+#elif defined(__linux__)
   #include <pty.h>
+  #include <termios.h> // tcgetattr, struct termios
 #endif
 
 /*
