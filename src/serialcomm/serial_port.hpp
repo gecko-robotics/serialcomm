@@ -23,7 +23,7 @@ SOFTWARE.
 \********************************************************************************/
 #pragma once
 
-#include <cstdint> // uint8_t
+#include <stdint.h> // uint8_t
 // #include <exception>
 #include <string>
 // #include <errno.h>     // errno
