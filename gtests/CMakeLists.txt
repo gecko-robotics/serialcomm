@@ -1,8 +1,14 @@
+find_package(GTest REQUIRED)
+if(GTest_FOUND)
+  message(STATUS "=> Found gtest")
+else()
+  message(STATUS "*** Didn't find gtest")
+endif()
 
 enable_testing()
 
 list(APPEND gtests
-    main-gtest
+  main-gtest
 )
 
 # run all tests
